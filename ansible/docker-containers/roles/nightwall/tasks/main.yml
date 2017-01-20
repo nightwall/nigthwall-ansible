@@ -1,0 +1,97 @@
+---
+  - name: Création des dossiers nécessaires
+    file: path="{{ item }}"
+          state=directory
+    with_items:
+        - "{{ data_dir }}/nightwall"
+        - "{{ data_dir }}/nightwall/db"
+
+# Déploiement de la base de données
+################################################################################
+
+  - name: Lancement de la base de données
+    docker_container:
+      name: nightwall-db
+      image: mysql
+      volumes:
+        - "{{ data_dir }}/nightwall/db:/var/lib/mysql"
+        - /etc/localtime:/etc/localtime:ro # For time syncing
+      state: started
+      restart_policy: always
+      restart_retries: "{{ docker_restart_retries }}"
+      env:
+        MYSQL_ROOT_PASSWORD: "{{ mysql_password }}"
+
+  - name: Lancement de PhpMyAdmin
+    docker_container:
+      image: phpmyadmin/phpmyadmin
+      name: nightwall-phpmyadmin
+      ports:
+        - "{{ip_srv}}:8080:80"
+      links:
+        - "nightwall-db:db"
+      volumes:
+        - /etc/localtime:/etc/localtime:ro # For time syncing
+      state: started
+      restart_policy: always
+      restart_retries: "{{ docker_restart_retries }}"
+      env:
+        MYSQL_ROOT_PASSWORD: "{{ mysql_password }}"
+
+# Déploiement de l'api
+################################################################################
+
+  - name: Copie le dépot de l'API
+    git:
+      repo=https://github.com/nightwall/nightwall-server
+      dest="{{ data_dir }}/nightwall/api"
+
+  - name: Transfert de la configuration de l'API
+    template: src=nightwall.conf
+              dest={{ data_dir }}/nightwall/api/config/nightwall.conf
+              owner=root
+              group=root
+              mode=0644
+
+  - name: Build api image
+    docker_image:
+      path="{{ data_dir }}/nightwall/api"
+      name=nightwall-server
+
+  - name: Lancement de l'API
+    docker_container:
+      name: nightwall-api
+      image: nightwall-server
+      volumes:
+        - /etc/localtime:/etc/localtime:ro # For time syncing
+        - "{{ data_dir }}/nightwall/api:/nightwall-server"
+      links:
+        - "nightwall-db:db"
+      state: started
+      restart_policy: always
+      restart_retries: "{{ docker_restart_retries }}"
+
+# Déploiement du webclient
+################################################################################
+  - name: Copie le dépot du webclient
+    git:
+      repo=https://github.com/nightwall/nightwall-webclient
+      dest="{{ data_dir }}/nightwall/webclient"
+
+  - name: Transfert de la configuration de l'API
+    template: src=config.js
+              dest={{ data_dir }}/nightwall/webclient/config/config.js
+              owner=root
+              group=root
+              mode=0644
+
+  - name: Lancement du webclient
+    docker_container:
+      name: nightwall-webclient
+      image: lerenn/nginx-static-website
+      volumes:
+        - /etc/localtime:/etc/localtime:ro # For time syncing
+        - "{{ data_dir }}/nightwall/webclient:/var/www/html"
+      state: started
+      restart_policy: always
+      restart_retries: "{{ docker_restart_retries }}"

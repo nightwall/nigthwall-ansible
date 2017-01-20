@@ -1,0 +1,23 @@
+---
+  - name: Transfert du hostname
+    template: src=hostname
+              dest=/etc/hostname
+              owner=root
+              group=root
+              mode=0644
+
+  - name: Transfert de la configuration DNS
+    template: src=resolv.conf
+              dest=/etc/resolv.conf
+              owner=root
+              group=root
+              mode=0644
+
+  - name: Replacements dans la configuration du ssh
+    lineinfile:
+      dest=/etc/ssh/sshd_config
+      regexp="{{ item.regex }}"
+      line="{{ item.result }}"
+    with_items:
+      - { regex: '^PermitRootLogin .*', result: 'PermitRootLogin without-password' }
+    notify: Redémarrage ssh

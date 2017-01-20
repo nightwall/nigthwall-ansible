@@ -1,0 +1,4 @@
+---
+  - name: Redémarrage docker
+    service: name=docker
+             state=restarted

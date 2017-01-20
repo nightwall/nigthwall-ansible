@@ -1,0 +1,12 @@
+---
+  - hosts: server
+    user: root
+
+    vars_files:
+      - ../variables.yml
+
+    roles:
+      - customization
+      - update
+      - docker
+      - fail2ban

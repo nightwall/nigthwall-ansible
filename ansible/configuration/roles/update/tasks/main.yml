@@ -1,0 +1,13 @@
+---
+  - name: Installation des prérequis pour Ansible
+    raw: apt-get update && apt-get install -y aptitude
+
+  - name: Mise à jour du système
+    apt:
+        upgrade=full
+        state=latest
+
+  - name: Add some tools
+    apt:
+      name=vim,htop
+      state=present

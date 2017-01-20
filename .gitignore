@@ -1,0 +1,6 @@
+*.retry
+*.tar.gz
+machines
+variables.yml
+config.js
+nightwall.conf

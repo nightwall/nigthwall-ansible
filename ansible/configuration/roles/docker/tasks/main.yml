@@ -1,0 +1,28 @@
+---
+  - name: Présence de pip
+    apt: name=python-pip
+         state=present
+
+  - name: Installation de docker-py
+    pip: name=docker-py
+
+  - name: Installation de docker
+    apt: name=docker.io
+         state=present
+    notify: Redémarrage docker
+
+  - name: Création de l'utilisateur docker
+    user: name=docker
+          password={{ docker_password }}
+          state=present
+
+  - name: Accès aux fichiers Docker depuis le /root
+    file: path=/root/docker
+          src=/home/docker
+          state=link
+          force=yes
+
+  - name: Démarrage de Docker
+    service: name=docker
+             state=started
+             enabled=yes

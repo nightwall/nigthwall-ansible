@@ -1,0 +1,32 @@
+---
+  - name: Création des dossiers nécessaires
+    file: path="{{ item }}"
+          state=directory
+    with_items:
+        - "{{ data_dir }}/reverse-proxy/sites-enabled"
+
+  - name: Transfert du fichier de conf nightwall
+    template: src="nightwall.conf"
+              dest="{{ data_dir }}/reverse-proxy/sites-enabled/nightwall.conf"
+              owner=root
+              group=root
+              mode=0755
+
+  - name: Lancement du conteneur principal
+    docker_container:
+      name: reverse-proxy
+      image: lerenn/nginx-reverse-proxy
+      volumes:
+        - "{{ data_dir }}/reverse-proxy/sites-enabled:/etc/nginx/sites-enabled"
+        - /etc/localtime:/etc/localtime:ro # For time syncing
+      ports:
+        - "{{ip_srv}}:80:80"
+      links:
+        - "nightwall-api:nightwall-api"
+        - "nightwall-webclient:nightwall-webclient"
+      state: "{{ item }}"
+      restart_policy: always
+      restart_retries: "{{ docker_restart_retries }}"
+    with_items:
+      - stopped
+      - started

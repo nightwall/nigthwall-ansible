@@ -1,0 +1,14 @@
+---
+  - hosts: server
+    user: root
+
+    tasks:
+      - name: Création du dossier de données
+        local_action: file path=./nightwall-server state=directory
+
+      - name: Backup des données
+        synchronize: dest=../../nightwall-server/
+                     src=/home/docker/data/
+                     mode=pull
+                     recursive=yes
+                     delete=yes

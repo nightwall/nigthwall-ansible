@@ -1,0 +1,10 @@
+---
+  - hosts: server
+    user: root
+
+    vars_files:
+      - ../variables.yml
+
+    roles:
+      # - nightwall
+      - reverse-proxy

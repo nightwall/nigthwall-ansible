@@ -1,0 +1,18 @@
+---
+- name: Installation de fail2ban
+  apt: name=fail2ban
+       state=present
+  notify: Redémarrage fail2ban
+
+- name: Transfert de la configuration
+  template: src=jail.conf
+            dest=/etc/fail2ban/jail.conf
+            owner=root
+            group=root
+            mode=0644
+  notify: Redémarrage fail2ban
+
+- name: Lancement de fail2ban
+  service: name=fail2ban
+           state=started
+           enabled=yes

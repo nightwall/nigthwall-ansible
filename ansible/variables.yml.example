@@ -1,0 +1,5 @@
+---
+ip_srv: X.X.X.X
+data_dir: "/home/docker/data" # Where data is stored
+mysql_password: Y0UR_P455W0RD
+docker_restart_retries: 0 # Unlimited retries
