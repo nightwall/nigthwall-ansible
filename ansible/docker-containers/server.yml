@@ -6,5 +6,5 @@
       - ../variables.yml
 
     roles:
-      # - nightwall
+      - nightwall
       - reverse-proxy

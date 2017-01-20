@@ -20,6 +20,7 @@
         - "{{ data_dir }}/reverse-proxy/sites-enabled:/etc/nginx/sites-enabled"
         - /etc/localtime:/etc/localtime:ro # For time syncing
       ports:
+        - "{{ip_srv}}:443:443"
         - "{{ip_srv}}:80:80"
       links:
         - "nightwall-api:nightwall-api"
@@ -28,5 +29,5 @@
       restart_policy: always
       restart_retries: "{{ docker_restart_retries }}"
     with_items:
-      - stopped
+      - absent
       - started
